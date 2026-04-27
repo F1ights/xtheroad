@@ -1,34 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>X the Road (Isometric)</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crossy Ball</title>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<h1>X the Road</h1>
+<canvas id="game"></canvas>
 
-<div id="hud">
-  <div id="score">Score: 0</div>
-  <div id="multiplier">x1</div>
-</div>
-
-<div id="startScreen" class="overlay">
-  <h2>X the Road</h2>
-  <p>Isometric Edition</p>
-  <button onclick="startGame()">START</button>
-</div>
-
-<div id="gameOver" class="overlay hidden">
-  <h2>Game Over</h2>
-  <p id="finalScore"></p>
-  <button onclick="startGame()">RESTART</button>
-</div>
-
-<canvas id="game" width="500" height="500"></canvas>
-
+<!-- Mobile controls -->
 <div id="controls">
   <button onclick="move('up')">⬆️</button>
   <div>
@@ -38,6 +20,6 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
