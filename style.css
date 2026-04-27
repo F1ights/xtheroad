@@ -1,36 +1,39 @@
 body {
-  margin: 0;
-  background: #111;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: sans-serif;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  background: #222;
+  color: white;
 }
 
 #game {
   width: 400px;
-  height: 600px;
-  background: #222;
-  position: relative;
-  overflow: hidden;
-  border: 3px solid #444;
+  height: 400px;
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(10, 40px);
+  grid-template-rows: repeat(10, 40px);
+  border: 3px solid white;
 }
 
-/* Player */
-#player {
-  width: 20px;
-  height: 20px;
-  background: lime;
-  position: absolute;
-  bottom: 20px;
-  left: 190px;
+.cell {
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
 }
 
-/* Obstacle */
-.obstacle {
-  width: 30px;
-  height: 30px;
+.road {
+  background: #555;
+}
+
+.grass {
+  background: #2ecc71;
+}
+
+.player {
+  background: yellow;
+  border-radius: 50%;
+}
+
+.car {
   background: red;
-  position: absolute;
 }
