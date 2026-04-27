@@ -1,19 +1,47 @@
 body {
   margin: 0;
   background: #111;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   overflow: hidden;
   font-family: sans-serif;
 }
 
 canvas {
+  display: block;
+  margin: auto;
   background: #222;
-  image-rendering: pixelated;
 }
 
+/* HUD */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-size: 18px;
+}
+
+/* overlays */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* controls */
 #controls {
   position: fixed;
   bottom: 10px;
@@ -21,12 +49,10 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
 }
 
 #controls button {
-  font-size: 20px;
+  font-size: 18px;
+  margin: 4px;
   padding: 10px;
-  margin: 2px;
-  border-radius: 10px;
 }
