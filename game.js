@@ -4,65 +4,51 @@ const ctx = canvas.getContext("2d");
 canvas.width = 400;
 canvas.height = 600;
 
-const tileSize = 40;
-const cols = 10;
+const TILE = 40;
+const COLS = 10;
 
-// --------------------
-// GAME STATE
-// --------------------
-let gameStarted = false;
+// ---------------- STATE ----------------
+let started = false;
 let gameOver = false;
 
 let player, cameraY, score;
-
 let world = {};
 let vehicles = [];
+let checkpoint = { x: 5, y: 0 };
 
-let lastCheckpoint = { x: 5, y: 0 };
-
-// --------------------
-// CONFIG
-// --------------------
+// ---------------- CONFIG ----------------
 const SAFE_START = 4;
-const CHECKPOINT_EVERY = 10;
+const CHECKPOINT_STEP = 10;
 
-// --------------------
-// START GAME
-// --------------------
+// ---------------- START ----------------
 window.startGame = function () {
-  document.getElementById("startScreen").style.display = "none";
-
+  document.getElementById("startScreen").classList.add("hidden");
   resetToCheckpoint();
-  gameStarted = true;
+  started = true;
 };
 
-// --------------------
-// RESET (checkpoint respawn)
-// --------------------
+// ---------------- RESET ----------------
 function resetToCheckpoint() {
-  player = { x: lastCheckpoint.x, y: lastCheckpoint.y };
-  cameraY = player.y * tileSize - 250;
+  player = { x: checkpoint.x, y: checkpoint.y };
+  cameraY = player.y * TILE - 250;
   score = player.y;
 
   gameOver = false;
   world = {};
   vehicles = [];
 
+  updateScore();
   document.getElementById("gameOverScreen").classList.add("hidden");
 }
 
-// --------------------
-// FULL RESTART FROM CHECKPOINT BUTTON
-// --------------------
-window.restartFromCheckpoint = function () {
+// ---------------- RESTART ----------------
+window.restartCheckpoint = function () {
   resetToCheckpoint();
 };
 
-// --------------------
-// INPUT
-// --------------------
+// ---------------- INPUT ----------------
 window.addEventListener("keydown", e => {
-  if (!gameStarted || gameOver) return;
+  if (!started || gameOver) return;
 
   if (e.key === "ArrowUp") move(0, 1);
   if (e.key === "ArrowDown") move(0, -1);
@@ -71,197 +57,139 @@ window.addEventListener("keydown", e => {
 });
 
 window.move = function (dx, dy) {
-  if (gameOver) return;
+  if (!started || gameOver) return;
 
   player.x += dx;
   player.y += dy;
 
-  player.x = Math.max(0, Math.min(cols - 1, player.x));
+  player.x = Math.max(0, Math.min(COLS - 1, player.x));
   player.y = Math.max(0, player.y);
 
-  // score = highest y reached
   score = Math.max(score, player.y);
+  updateScore();
 
   // checkpoint save
-  if (player.y % CHECKPOINT_EVERY === 0 && player.y > 0) {
-    lastCheckpoint = { x: player.x, y: player.y };
+  if (player.y % CHECKPOINT_STEP === 0 && player.y > 0) {
+    checkpoint = { x: player.x, y: player.y };
   }
 };
 
-// --------------------
-// LANE GENERATION
-// --------------------
-function getLane(y) {
+function updateScore() {
+  document.getElementById("score").innerText = score;
+}
+
+// ---------------- LANE ----------------
+function lane(y) {
   if (!world[y]) {
 
-    // SAFE START (NO OBSTACLES)
     if (y < SAFE_START) {
-      world[y] = {
-        type: "grass",
-        safe: true,
-        checkpoint: false
-      };
+      world[y] = { type: "grass", safe: true, checkpoint: false };
       return world[y];
     }
 
-    // CHECKPOINT LANE
-    if (y % CHECKPOINT_EVERY === 0) {
-      world[y] = {
-        type: "grass",
-        safe: true,
-        checkpoint: true
-      };
+    if (y % CHECKPOINT_STEP === 0) {
+      world[y] = { type: "grass", safe: true, checkpoint: true };
       return world[y];
     }
 
-    // NORMAL LANE
-    const isRoad = Math.random() < 0.6;
+    const road = Math.random() < 0.6;
 
     world[y] = {
-      type: isRoad ? "road" : "grass",
-      safe: !isRoad,
-      checkpoint: false,
-
+      type: road ? "road" : "grass",
       dir: Math.random() < 0.5 ? -1 : 1,
       speed: 0.02 + Math.random() * 0.04,
-      spawnRate: Math.random()
+      spawn: Math.random(),
+      checkpoint: false
     };
 
-    // spawn vehicles ONLY on road AND NOT safe start
-    if (isRoad && y >= SAFE_START && world[y].spawnRate > 0.35) {
-      const count = 1 + Math.floor(Math.random() * 2);
-
-      for (let i = 0; i < count; i++) {
+    if (road && world[y].spawn > 0.35) {
+      for (let i = 0; i < 2; i++) {
         vehicles.push({
-          x: Math.random() * cols,
-          y: y,
+          x: Math.random() * COLS,
+          y,
           dir: world[y].dir,
           speed: world[y].speed,
-          type: Math.random() < 0.25 ? "truck" : "car"
+          type: Math.random() < 0.3 ? "truck" : "car"
         });
       }
     }
-
-    return world[y];
   }
-
   return world[y];
 }
 
-// --------------------
-// UPDATE
-// --------------------
+// ---------------- UPDATE ----------------
 function update() {
-  if (!gameStarted || gameOver) return;
+  if (!started || gameOver) return;
 
-  // FIXED CAMERA (NOT INVERTED)
-  cameraY = player.y * tileSize - 250;
+  cameraY = player.y * TILE - 250;
 
   for (let v of vehicles) {
     v.x += v.dir * v.speed;
 
-    if (v.x < -2) v.x = cols + 2;
-    if (v.x > cols + 2) v.x = -2;
+    if (v.x < -2) v.x = COLS + 2;
+    if (v.x > COLS + 2) v.x = -2;
 
-    // collision
     if (Math.floor(v.x) === player.x && v.y === player.y) {
       gameOver = true;
 
       document.getElementById("gameOverScreen").classList.remove("hidden");
-      document.getElementById("finalScore").innerText =
-        "Score: " + score;
+      document.getElementById("finalScore").innerText = "Score: " + score;
     }
   }
 }
 
-// --------------------
-// DRAW LANE
-// --------------------
-function drawLane(y, lane) {
-  const sy = y * tileSize - cameraY;
-
-  for (let x = 0; x < cols; x++) {
-
-    if (lane.checkpoint) {
-      ctx.fillStyle = "#2ecc71";
-    } else {
-      ctx.fillStyle = lane.type === "road" ? "#555" : "#3cb371";
-    }
-
-    ctx.fillRect(x * tileSize, sy, tileSize, tileSize);
-
-    if (lane.type === "road") {
-      ctx.fillStyle = "#777";
-      ctx.fillRect(x * tileSize, sy + tileSize / 2 - 2, tileSize, 4);
-    }
-  }
-
-  if (lane.checkpoint) {
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(0, sy, canvas.width, tileSize);
-
-    ctx.fillStyle = "white";
-    ctx.font = "14px Arial";
-    ctx.fillText("CHECKPOINT", 120, sy + 25);
-  }
-}
-
-// --------------------
-// DRAW VEHICLE
-// --------------------
-function drawVehicle(v) {
-  const x = v.x * tileSize;
-  const y = v.y * tileSize - cameraY;
-
-  const truck = v.type === "truck";
-
-  const w = truck ? tileSize * 1.6 : tileSize * 0.9;
-  const h = tileSize * 0.7;
-
-  const ox = truck ? -tileSize * 0.3 : 0;
-
-  ctx.fillStyle = truck ? "#c0392b" : "#e74c3c";
-  ctx.fillRect(x + ox, y + tileSize * 0.2, w, h);
-
-  ctx.fillStyle = "#1c1c1c";
-
-  if (v.dir > 0) {
-    ctx.fillRect(x + ox + w * 0.7, y + tileSize * 0.28, w * 0.2, h * 0.4);
-  } else {
-    ctx.fillRect(x + ox + w * 0.1, y + tileSize * 0.28, w * 0.2, h * 0.4);
-  }
-}
-
-// --------------------
-// DRAW
-// --------------------
+// ---------------- DRAW ----------------
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const start = Math.floor(cameraY / tileSize);
+  const start = Math.floor(cameraY / TILE);
   const end = start + 20;
 
   for (let y = start; y < end; y++) {
-    const lane = getLane(y);
-    drawLane(y, lane);
+    const l = lane(y);
+    const sy = y * TILE - cameraY;
+
+    for (let x = 0; x < COLS; x++) {
+      ctx.fillStyle = l.type === "road" ? "#555" : "#3cb371";
+      ctx.fillRect(x * TILE, sy, TILE, TILE);
+
+      if (l.type === "road") {
+        ctx.fillStyle = "#777";
+        ctx.fillRect(x * TILE, sy + TILE / 2 - 2, TILE, 4);
+      }
+    }
+
+    if (l.checkpoint) {
+      ctx.strokeStyle = "#fff";
+      ctx.strokeRect(0, sy, canvas.width, TILE);
+    }
   }
 
   // player
   ctx.fillStyle = "blue";
   ctx.beginPath();
   ctx.arc(
-    player.x * tileSize + tileSize / 2,
-    player.y * tileSize - cameraY + tileSize / 2,
-    tileSize / 3,
+    player.x * TILE + TILE / 2,
+    player.y * TILE - cameraY + TILE / 2,
+    TILE / 3,
     0,
     Math.PI * 2
   );
   ctx.fill();
 
-  for (let v of vehicles) drawVehicle(v);
+  // vehicles
+  for (let v of vehicles) {
+    const x = v.x * TILE;
+    const y = v.y * TILE - cameraY;
 
-  if (!gameStarted) return;
+    const truck = v.type === "truck";
+    const w = truck ? TILE * 1.6 : TILE * 0.9;
+    const h = TILE * 0.6;
+    const ox = truck ? -TILE * 0.3 : 0;
+
+    ctx.fillStyle = truck ? "#c0392b" : "#e74c3c";
+    ctx.fillRect(x + ox, y + TILE * 0.2, w, h);
+  }
 
   if (gameOver) {
     ctx.fillStyle = "white";
@@ -270,9 +198,7 @@ function draw() {
   }
 }
 
-// --------------------
-// LOOP
-// --------------------
+// ---------------- LOOP ----------------
 function loop() {
   update();
   draw();
