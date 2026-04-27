@@ -9,7 +9,7 @@ const COLS = 10;
 
 let score = 0;
 
-// PLAYER (smooth movement)
+// PLAYER
 let player = {
   x: 4,
   y: 9,
@@ -22,7 +22,6 @@ let player = {
 // LANES
 let lanes = [];
 
-// create lane types
 function createLane(i) {
   const type = Math.random() < 0.5 ? "road" : Math.random() < 0.5 ? "river" : "grass";
 
@@ -36,12 +35,11 @@ function createLane(i) {
   };
 }
 
-// init world
 for (let i = 0; i < 30; i++) {
   lanes.push(createLane(i));
 }
 
-// INPUT
+// MOVE
 function move(dir) {
   if (player.moving) return;
 
@@ -60,9 +58,8 @@ function move(dir) {
   player.progress = 0;
 }
 
-// GAME UPDATE
+// UPDATE
 function update(delta) {
-  // smooth player movement
   if (player.moving) {
     player.progress += delta * 0.01;
 
@@ -75,7 +72,6 @@ function update(delta) {
     }
   }
 
-  // move objects (cars/logs)
   lanes.forEach(lane => {
     lane.objects.forEach(obj => {
       obj.x += lane.speed * 0.02;
@@ -85,7 +81,6 @@ function update(delta) {
     });
   });
 
-  // scroll world
   if (player.y < 5) {
     lanes.unshift(createLane(lanes.length));
     lanes.pop();
@@ -101,6 +96,7 @@ function checkCollision() {
 
   lane.objects.forEach(obj => {
     if (Math.floor(obj.x) === player.x) {
+      alert("💥 Game Over! Score: " + score + "\nTry again in X the Road");
       resetGame();
     }
   });
@@ -128,14 +124,12 @@ function draw() {
       ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
     }
 
-    // objects
     lane.objects.forEach(obj => {
-      ctx.fillStyle = lane.type === "road" ? "red" : "brown";
+      ctx.fillStyle = lane.type === "road" ? "red" : "#8b4513";
       ctx.fillRect(obj.x * TILE, y * TILE, TILE, TILE);
     });
   });
 
-  // smooth player interpolation
   let px = player.x + (player.targetX - player.x) * player.progress;
   let py = player.y + (player.targetY - player.y) * player.progress;
 
@@ -147,7 +141,7 @@ function draw() {
   scoreBoard.innerText = "Score: " + score;
 }
 
-// LOOP (smooth 60fps)
+// LOOP
 let lastTime = 0;
 
 function loop(time) {
