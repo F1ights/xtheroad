@@ -3,20 +3,38 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Crossy Ball</title>
+<title>Crossy Traffic</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
 <canvas id="game"></canvas>
 
-<!-- Mobile controls -->
+<!-- START SCREEN -->
+<div id="startScreen" class="overlay">
+  <h1>Crossy Traffic</h1>
+  <button onclick="startGame()">START</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameOverScreen" class="overlay hidden">
+  <h1>Game Over</h1>
+  <p id="finalScore">Score: 0</p>
+  <button onclick="restartCheckpoint()">Restart from Checkpoint</button>
+</div>
+
+<!-- SCORE -->
+<div id="hud">
+  Score: <span id="score">0</span>
+</div>
+
+<!-- MOBILE CONTROLS -->
 <div id="controls">
-  <button onclick="move('up')">⬆️</button>
+  <button onclick="move(0,1)">⬆️</button>
   <div>
-    <button onclick="move('left')">⬅️</button>
-    <button onclick="move('down')">⬇️</button>
-    <button onclick="move('right')">➡️</button>
+    <button onclick="move(-1,0)">⬅️</button>
+    <button onclick="move(0,-1)">⬇️</button>
+    <button onclick="move(1,0)">➡️</button>
   </div>
 </div>
 
