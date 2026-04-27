@@ -10,25 +10,23 @@
 
 <canvas id="game"></canvas>
 
-<!-- START SCREEN -->
+<!-- START -->
 <div id="startScreen" class="overlay">
   <h1>Crossy Traffic</h1>
-  <button onclick="startGame()">START</button>
+  <button id="startBtn">START</button>
 </div>
 
 <!-- GAME OVER -->
 <div id="gameOverScreen" class="overlay hidden">
   <h1>Game Over</h1>
   <p id="finalScore">Score: 0</p>
-  <button onclick="restartCheckpoint()">Restart from Checkpoint</button>
+  <button id="restartBtn">Restart</button>
 </div>
 
 <!-- SCORE -->
-<div id="hud">
-  Score: <span id="score">0</span>
-</div>
+<div id="hud">Score: <span id="score">0</span></div>
 
-<!-- MOBILE CONTROLS -->
+<!-- CONTROLS -->
 <div id="controls">
   <button onclick="move(0,1)">⬆️</button>
   <div>
