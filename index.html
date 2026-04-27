@@ -1,41 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Crossy Traffic</title>
-<link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <title>Catch the Circle</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<canvas id="game"></canvas>
+  <h1>🎯 Catch the Circle</h1>
+  <p>Click the circle as fast as you can!</p>
 
-<!-- START -->
-<div id="startScreen" class="overlay">
-  <h1>Crossy Traffic</h1>
-  <button id="startBtn">START</button>
-</div>
+  <div id="score">Score: 0</div>
 
-<!-- GAME OVER -->
-<div id="gameOverScreen" class="overlay hidden">
-  <h1>Game Over</h1>
-  <p id="finalScore">Score: 0</p>
-  <button id="restartBtn">Restart</button>
-</div>
-
-<!-- SCORE -->
-<div id="hud">Score: <span id="score">0</span></div>
-
-<!-- CONTROLS -->
-<div id="controls">
-  <button onclick="move(0,1)">⬆️</button>
-  <div>
-    <button onclick="move(-1,0)">⬅️</button>
-    <button onclick="move(0,-1)">⬇️</button>
-    <button onclick="move(1,0)">➡️</button>
+  <div id="game-area">
+    <div id="circle"></div>
   </div>
-</div>
 
-<script src="game.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
