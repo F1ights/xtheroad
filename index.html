@@ -3,16 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crossy Road Clone</title>
+  <title>x the road</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>X the Road</h1>
 
-  <div id="game"></div>
+<h1>x the road</h1>
+<div id="score">Score: 0</div>
 
-  <p>Use arrow keys to move</p>
+<div id="game"></div>
 
-  <script src="script.js"></script>
+<!-- Mobile Controls -->
+<div id="controls">
+  <button onclick="move('up')">⬆️</button>
+  <div>
+    <button onclick="move('left')">⬅️</button>
+    <button onclick="move('down')">⬇️</button>
+    <button onclick="move('right')">➡️</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
