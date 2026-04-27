@@ -6,7 +6,27 @@ body {
   font-family: Arial;
 }
 
-canvas {
+h1 {
+  margin-top: 10px;
+}
+
+#ui {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 500px;
+  margin: auto;
+}
+
+#instructions {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: left;
+}
+
+#game {
   background: #2ecc71;
   display: block;
   margin: 10px auto;
