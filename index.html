@@ -3,26 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>X the Road</title>
+  <title>X the Road (Isometric)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>X the Road</h1>
 
-<div id="ui">
+<div id="hud">
   <div id="score">Score: 0</div>
-
-  <div id="instructions">
-    <h3>How to Play</h3>
-    <p>⬆️ Move forward to score points</p>
-    <p>🚗 Avoid cars</p>
-    <p>🌊 Don’t fall in the river</p>
-    <p>📱 Use buttons or arrow keys</p>
-  </div>
+  <div id="multiplier">x1</div>
 </div>
 
-<canvas id="game" width="400" height="400"></canvas>
+<div id="startScreen" class="overlay">
+  <h2>X the Road</h2>
+  <p>Isometric Edition</p>
+  <button onclick="startGame()">START</button>
+</div>
+
+<div id="gameOver" class="overlay hidden">
+  <h2>Game Over</h2>
+  <p id="finalScore"></p>
+  <button onclick="startGame()">RESTART</button>
+</div>
+
+<canvas id="game" width="500" height="500"></canvas>
 
 <div id="controls">
   <button onclick="move('up')">⬆️</button>
