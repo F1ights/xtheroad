@@ -1,74 +1,112 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const scoreBoard = document.getElementById("score");
+const scoreEl = document.getElementById("score");
+const multEl = document.getElementById("multiplier");
+const startScreen = document.getElementById("startScreen");
+const gameOverScreen = document.getElementById("gameOver");
+const finalScore = document.getElementById("finalScore");
 
-const TILE = 40;
-const ROWS = 10;
-const COLS = 10;
+const TILE_W = 40;
+const TILE_H = 20;
 
+const GRID = 10;
+
+let running = false;
 let score = 0;
+let multiplier = 1;
 
-// PLAYER
+// 🐸 player
 let player = {
   x: 4,
   y: 9,
-  targetX: 4,
-  targetY: 9,
-  moving: false,
-  progress: 0
+  tx: 4,
+  ty: 9,
+  t: 0,
+  jumping: false
 };
 
-// LANES
+// world
 let lanes = [];
 
+// isometric transform
+function isoX(x, y) {
+  return (x - y) * (TILE_W / 2) + 250;
+}
+
+function isoY(x, y) {
+  return (x + y) * (TILE_H / 2) + 80;
+}
+
+// lane generator
 function createLane(i) {
-  const type = Math.random() < 0.5 ? "road" : Math.random() < 0.5 ? "river" : "grass";
+  const r = Math.random();
+  let type = r < 0.4 ? "road" : r < 0.7 ? "river" : "grass";
 
   return {
     y: i,
     type,
-    speed: (Math.random() * 1 + 0.5) * (Math.random() < 0.5 ? 1 : -1),
-    objects: Array.from({ length: Math.floor(Math.random() * 3) }, () => ({
-      x: Math.random() * COLS
+    speed: (Math.random() * 0.6 + 0.3) * (Math.random() < 0.5 ? 1 : -1),
+    objects: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => ({
+      x: Math.random() * GRID,
+      size: 1 + Math.floor(Math.random() * 2),
+      coin: Math.random() < 0.25
     }))
   };
 }
 
-for (let i = 0; i < 30; i++) {
-  lanes.push(createLane(i));
+for (let i = 0; i < 40; i++) lanes.push(createLane(i));
+
+// start
+function startGame() {
+  running = true;
+  score = 0;
+  multiplier = 1;
+
+  player = { x: 4, y: 9, tx: 4, ty: 9, t: 0, jumping: false };
+
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
 }
 
-// MOVE
+function gameOver() {
+  running = false;
+  finalScore.innerText = "Score: " + score;
+  gameOverScreen.classList.remove("hidden");
+}
+
+// 🐸 arc jump
 function move(dir) {
-  if (player.moving) return;
+  if (!running || player.jumping) return;
 
-  player.targetX = player.x;
-  player.targetY = player.y;
+  player.tx = player.x;
+  player.ty = player.y;
 
-  if (dir === "up") player.targetY--;
-  if (dir === "down") player.targetY++;
-  if (dir === "left") player.targetX--;
-  if (dir === "right") player.targetX++;
+  if (dir === "up") player.ty--;
+  if (dir === "down") player.ty++;
+  if (dir === "left") player.tx--;
+  if (dir === "right") player.tx++;
 
-  player.targetX = Math.max(0, Math.min(COLS - 1, player.targetX));
-  player.targetY = Math.max(0, Math.min(ROWS - 1, player.targetY));
+  player.tx = Math.max(0, Math.min(GRID - 1, player.tx));
+  player.ty = Math.max(0, Math.min(GRID - 1, player.ty));
 
-  player.moving = true;
-  player.progress = 0;
+  player.t = 0;
+  player.jumping = true;
 }
 
-// UPDATE
+// update
 function update(delta) {
-  if (player.moving) {
-    player.progress += delta * 0.01;
+  if (!running) return;
 
-    if (player.progress >= 1) {
-      player.x = player.targetX;
-      player.y = player.targetY;
-      player.moving = false;
+  if (player.jumping) {
+    player.t += delta * 0.01;
 
-      score++;
+    if (player.t >= 1) {
+      player.x = player.tx;
+      player.y = player.ty;
+      player.jumping = false;
+
+      score += 10 * multiplier;
     }
   }
 
@@ -76,8 +114,8 @@ function update(delta) {
     lane.objects.forEach(obj => {
       obj.x += lane.speed * 0.02;
 
-      if (obj.x < -1) obj.x = COLS + 1;
-      if (obj.x > COLS + 1) obj.x = -1;
+      if (obj.x < -2) obj.x = GRID + 2;
+      if (obj.x > GRID + 2) obj.x = -2;
     });
   });
 
@@ -90,63 +128,116 @@ function update(delta) {
   checkCollision();
 }
 
-// COLLISION
+// collision
 function checkCollision() {
   const lane = lanes[player.y];
+  if (!lane) return;
+
+  let onLog = false;
 
   lane.objects.forEach(obj => {
-    if (Math.floor(obj.x) === player.x) {
-      alert("💥 Game Over! Score: " + score + "\nTry again in X the Road");
-      resetGame();
+
+    // road
+    if (lane.type === "road") {
+      if (Math.floor(obj.x) === player.x) gameOver();
+    }
+
+    // river
+    if (lane.type === "river") {
+      if (Math.floor(obj.x) === player.x) {
+        onLog = true;
+        player.x += lane.speed * 0.02;
+      }
+    }
+
+    // coins
+    if (obj.coin && Math.floor(obj.x) === player.x) {
+      obj.coin = false;
+      score += 50 * multiplier;
+      multiplier++;
     }
   });
+
+  if (lane.type === "river" && !onLog) gameOver();
 }
 
-// RESET
-function resetGame() {
-  player.x = 4;
-  player.y = 9;
-  player.targetX = 4;
-  player.targetY = 9;
-  score = 0;
+// draw tile
+function drawTile(x, y, color) {
+  ctx.fillStyle = color;
+
+  ctx.beginPath();
+  ctx.moveTo(isoX(x, y), isoY(x, y));
+  ctx.lineTo(isoX(x + 1, y), isoY(x + 1, y));
+  ctx.lineTo(isoX(x + 1, y + 1), isoY(x + 1, y + 1));
+  ctx.lineTo(isoX(x, y + 1), isoY(x, y + 1));
+  ctx.closePath();
+  ctx.fill();
 }
 
-// DRAW
+// draw
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  lanes.forEach((lane, y) => {
-    for (let x = 0; x < COLS; x++) {
-      if (lane.type === "road") ctx.fillStyle = "#444";
-      else if (lane.type === "river") ctx.fillStyle = "#3498db";
-      else ctx.fillStyle = "#2ecc71";
+  // ground
+  for (let y = 0; y < GRID; y++) {
+    for (let x = 0; x < GRID; x++) {
 
-      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      const lane = lanes[y];
+
+      let color =
+        lane.type === "road" ? "#444" :
+        lane.type === "river" ? "#1e88e5" :
+        "#2ecc71";
+
+      drawTile(x, y, color);
     }
+  }
 
+  // objects
+  lanes.forEach((lane, y) => {
     lane.objects.forEach(obj => {
-      ctx.fillStyle = lane.type === "road" ? "red" : "#8b4513";
-      ctx.fillRect(obj.x * TILE, y * TILE, TILE, TILE);
+
+      let sx = isoX(obj.x, y);
+      let sy = isoY(obj.x, y);
+
+      if (lane.type === "road") ctx.fillStyle = "red";
+      if (lane.type === "river") ctx.fillStyle = "#8b4513";
+
+      ctx.fillRect(sx - 10, sy - 20, 20 * obj.size, 10);
+
+      if (obj.coin) {
+        ctx.fillStyle = "gold";
+        ctx.beginPath();
+        ctx.arc(sx, sy - 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
     });
   });
 
-  let px = player.x + (player.targetX - player.x) * player.progress;
-  let py = player.y + (player.targetY - player.y) * player.progress;
+  // player
+  let px = player.x + (player.tx - player.x) * player.t;
+  let py = player.y + (player.ty - player.y) * player.t;
+
+  let sx = isoX(px, py);
+  let sy = isoY(px, py);
+
+  let lift = Math.sin(player.t * Math.PI) * 15;
 
   ctx.fillStyle = "yellow";
   ctx.beginPath();
-  ctx.arc(px * TILE + 20, py * TILE + 20, 15, 0, Math.PI * 2);
+  ctx.arc(sx, sy - lift, 10, 0, Math.PI * 2);
   ctx.fill();
 
-  scoreBoard.innerText = "Score: " + score;
+  scoreEl.innerText = "Score: " + score;
+  multEl.innerText = "x" + multiplier;
 }
 
-// LOOP
-let lastTime = 0;
+// loop
+let last = 0;
 
-function loop(time) {
-  const delta = time - lastTime;
-  lastTime = time;
+function loop(t) {
+  let delta = t - last;
+  last = t;
 
   update(delta);
   draw();
