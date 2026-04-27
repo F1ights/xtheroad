@@ -8,6 +8,7 @@ const gameOverScreen = document.getElementById("gameOver");
 const finalScore = document.getElementById("finalScore");
 
 const GRID = 10;
+const TILE = 40;
 
 let running = false;
 let score = 0;
@@ -26,19 +27,6 @@ let player = {
 // WORLD
 let lanes = [];
 
-// ISOMETRIC SCALE
-const TILE_W = 40;
-const TILE_H = 20;
-
-// ISO transform
-function isoX(x, y) {
-  return (x - y) * (TILE_W / 2) + 250;
-}
-
-function isoY(x, y) {
-  return (x + y) * (TILE_H / 2) + 80;
-}
-
 // CREATE LANES
 function createLane(i) {
   const r = Math.random();
@@ -51,7 +39,7 @@ function createLane(i) {
   return {
     y: i,
     type,
-    speed: (Math.random() * 0.6 + 0.3) * (Math.random() < 0.5 ? 1 : -1),
+    speed: (Math.random() * 0.8 + 0.3) * (Math.random() < 0.5 ? 1 : -1),
 
     objects: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => ({
       x: Math.random() * GRID,
@@ -66,20 +54,13 @@ for (let i = 0; i < 40; i++) {
   lanes.push(createLane(i));
 }
 
-// START GAME
+// START
 function startGame() {
   running = true;
   score = 0;
   multiplier = 1;
 
-  player = {
-    x: 4,
-    y: 9,
-    tx: 4,
-    ty: 9,
-    t: 0,
-    jumping: false
-  };
+  player = { x: 4, y: 9, tx: 4, ty: 9, t: 0, jumping: false };
 
   startScreen.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
@@ -111,11 +92,11 @@ function move(dir) {
   player.jumping = true;
 }
 
-// UPDATE LOOP
+// UPDATE
 function update(delta) {
   if (!running) return;
 
-  // 🐸 smooth jump
+  // smooth jump
   if (player.jumping) {
     player.t += delta * 0.01;
 
@@ -128,7 +109,7 @@ function update(delta) {
     }
   }
 
-  // move world objects
+  // move objects
   lanes.forEach(lane => {
     lane.objects.forEach(obj => {
       obj.x += lane.speed * 0.02;
@@ -148,7 +129,7 @@ function update(delta) {
   checkCollision();
 }
 
-// ✅ FIXED COLLISION SYSTEM (IMPORTANT)
+// COLLISION FIXED (2D SAFE)
 function checkCollision() {
   const lane = lanes[player.y];
   if (!lane) return;
@@ -166,12 +147,12 @@ function checkCollision() {
       }
     }
 
-    // 🌊 RIVER (FIXED LOG SYSTEM)
+    // 🌊 RIVER (must be on log)
     if (lane.type === "river") {
       if (dx < 0.6) {
         onLog = true;
 
-        // 🪵 carry player WITH log (no drift bug)
+        // 🪵 carry player
         player.x += lane.speed * 0.02;
       }
     }
@@ -184,34 +165,25 @@ function checkCollision() {
     }
   });
 
-  // ❌ must be on log in river
   if (lane.type === "river" && !onLog) {
     gameOver();
   }
 }
 
-// DRAW TILE (isometric diamond)
+// DRAW TILE
 function drawTile(x, y, color) {
   ctx.fillStyle = color;
-
-  ctx.beginPath();
-  ctx.moveTo(isoX(x, y), isoY(x, y));
-  ctx.lineTo(isoX(x + 1, y), isoY(x + 1, y));
-  ctx.lineTo(isoX(x + 1, y + 1), isoY(x + 1, y + 1));
-  ctx.lineTo(isoX(x, y + 1), isoY(x, y + 1));
-  ctx.closePath();
-  ctx.fill();
+  ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
 }
 
-// RENDER
+// DRAW
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // ground
-  for (let y = 0; y < GRID; y++) {
-    const lane = lanes[y];
-
+  // world
+  lanes.forEach((lane, y) => {
     for (let x = 0; x < GRID; x++) {
+
       let color =
         lane.type === "road" ? "#444" :
         lane.type === "river" ? "#1e88e5" :
@@ -219,25 +191,22 @@ function draw() {
 
       drawTile(x, y, color);
     }
-  }
 
-  // objects
-  lanes.forEach((lane, y) => {
+    // objects
     lane.objects.forEach(obj => {
 
-      const sx = isoX(obj.x, y);
-      const sy = isoY(obj.x, y);
+      const px = obj.x * TILE;
+      const py = y * TILE;
 
-      // 🚗 cars / 🪵 logs
       ctx.fillStyle = lane.type === "road" ? "red" : "#8b4513";
 
-      ctx.fillRect(sx - 10, sy - 20, 20 * obj.size, 10);
+      ctx.fillRect(px, py + 10, TILE * obj.size, 20);
 
-      // 🪙 coins
+      // coin
       if (obj.coin) {
         ctx.fillStyle = "gold";
         ctx.beginPath();
-        ctx.arc(sx, sy - 10, 5, 0, Math.PI * 2);
+        ctx.arc(px + 20, py + 20, 6, 0, Math.PI * 2);
         ctx.fill();
       }
     });
@@ -247,14 +216,11 @@ function draw() {
   let px = player.x + (player.tx - player.x) * player.t;
   let py = player.y + (player.ty - player.y) * player.t;
 
-  let sx = isoX(px, py);
-  let sy = isoY(px, py);
-
   let lift = Math.sin(player.t * Math.PI) * 15;
 
   ctx.fillStyle = "yellow";
   ctx.beginPath();
-  ctx.arc(sx, sy - lift, 10, 0, Math.PI * 2);
+  ctx.arc(px * TILE + 20, py * TILE + 20 - lift, 12, 0, Math.PI * 2);
   ctx.fill();
 
   // UI
@@ -262,7 +228,7 @@ function draw() {
   multEl.innerText = "x" + multiplier;
 }
 
-// GAME LOOP
+// LOOP
 let last = 0;
 
 function loop(t) {
