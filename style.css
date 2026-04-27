@@ -11,20 +11,10 @@ canvas {
   background: #222;
 }
 
-/* HUD */
-#hud {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  color: white;
-  font-size: 18px;
-}
-
-/* overlays */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.8);
   color: white;
   display: flex;
   flex-direction: column;
@@ -32,27 +22,20 @@ canvas {
   align-items: center;
 }
 
-.overlay button {
-  padding: 10px 20px;
-  font-size: 16px;
-}
-
 .hidden {
   display: none;
 }
 
-/* controls */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  color: white;
+}
+
 #controls {
   position: fixed;
   bottom: 10px;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#controls button {
-  font-size: 18px;
-  margin: 4px;
-  padding: 10px;
+  text-align: center;
 }
