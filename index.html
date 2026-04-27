@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crossy Road Clone</title>
+  <style>
+    body { margin: 0; background: #222; }
+    canvas { display: block; margin: auto; background: #eee; }
+  </style>
+</head>
+<body>
+
+<canvas id="game" width="400" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {
+  x: 180,
+  y: 550,
+  size: 20
+};
+
+let obstacles = [];
+let score = 0;
+
+// Controls
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") player.x -= 20;
+  if (e.key === "ArrowRight") player.x += 20;
+  if (e.key === "ArrowUp") player.y -= 20;
+  if (e.key === "ArrowDown") player.y += 20;
+});
+
+// Spawn obstacles
+function spawnObstacle() {
+  obstacles.push({
+    x: Math.random() * 360,
+    y: -20,
+    width: 40,
+    height: 20,
+    speed: 3 + Math.random() * 2
+  });
+}
+
+// Game loop
+function update() {
+  ctx.clearRect(0, 0, 400, 600);
+
+  // Draw player
+  ctx.fillStyle = "blue";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // Obstacles
+  ctx.fillStyle = "red";
+  for (let i = 0; i < obstacles.length; i++) {
+    let o = obstacles[i];
+    o.y += o.speed;
+    ctx.fillRect(o.x, o.y, o.width, o.height);
+
+    // Collision
+    if (
+      player.x < o.x + o.width &&
+      player.x + player.size > o.x &&
+      player.y < o.y + o.height &&
+      player.y + player.size > o.y
+    ) {
+      alert("Game Over! Score: " + score);
+      document.location.reload();
+    }
+  }
+
+  // Spawn logic
+  if (Math.random() < 0.03) spawnObstacle();
+
+  score++;
+  ctx.fillStyle = "black";
+  ctx.fillText("Score: " + score, 10, 20);
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
